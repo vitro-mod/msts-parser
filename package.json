@@ -1,0 +1,67 @@
+{
+  "name": "msts-parser",
+  "version": "1.0.0",
+  "description": "TypeScript parser for Microsoft Train Simulator (MSTS) file formats",
+  "keywords": [
+    "msts",
+    "train-simulator",
+    "parser",
+    "3d",
+    "model",
+    "shape",
+    "texture"
+  ],
+  "license": "MIT",
+  "author": "vitro-mod",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "./types": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vitro-mod/msts-parser"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "dependencies": {
+    "pako": "^2.1.0"
+  },
+  "peerDependencies": {
+    "buffer": "^6.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/pako": "^2.0.0",
+    "typescript": "^5.3.0",
+    "tsup": "^8.0.0",
+    "vitest": "^1.0.0"
+  }
+}
