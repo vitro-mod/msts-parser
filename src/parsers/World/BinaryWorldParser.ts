@@ -138,13 +138,6 @@ export class BinaryWorldParser extends BinaryParser implements IMstsParser<MstsW
                     object.population = this.getInt();
                     break;
                 case TokenID.Transfer:
-                    /** @todo */
-                    console.log('TODO:', tokens[code]);
-                    this.offset += len;
-                    break;
-                case TokenID.comment:
-                    this.offset += len;
-                    break;
                 case TokenID.VDbId:
                 case TokenID.VDbIdCount:
                 case TokenID.ViewDbSphere:
@@ -171,6 +164,9 @@ export class BinaryWorldParser extends BinaryParser implements IMstsParser<MstsW
                 case TokenID.Speed_Digit_Tex:
                 case TokenID.Speed_Sign_Shape:
                 case TokenID.Speed_Text_Size:
+                case TokenID.comment:
+                    this.offset += len;
+                    break;
                 default:
                     this.offset += len;
                     break;
