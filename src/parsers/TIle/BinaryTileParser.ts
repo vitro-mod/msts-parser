@@ -32,14 +32,36 @@ export class BinaryTileParser extends BinaryParser implements IMstsParser<MstsTi
                     this.skip(this.getByte());
                     tile.scale = this.getFloat();
                     break;
-                case TokenID.terrain_errthreshold_scale: // terrain errthreshold_scale
-                case TokenID.terrain_alwaysselect_maxdist: // terrain always select maxdist
                 case TokenID.terrain_nsamples: // terrain nsamples
+                    this.skip(this.getByte());
+                    tile.nsamples = this.getInt();
+                    break;
                 case TokenID.terrain_sample_rotation: // terrain sample rotation
+                    this.skip(this.getByte());
+                    tile.rotation = this.getFloat();
+                    break;
                 case TokenID.terrain_sample_size: // terrain sample size
+                    this.skip(this.getByte());
+                    tile.size = this.getFloat();
+                    break;
                 case TokenID.terrain_sample_ybuffer: // terrain sample ybuffer
+                    this.skip(this.getByte());
+                    tile.yBuffer = this.getStringU(this.getShort());
+                    break;
                 case TokenID.terrain_sample_ebuffer: // terrain sample ebuffer
+                    this.skip(this.getByte());
+                    tile.eBuffer = this.getStringU(this.getShort());
+                    break;
                 case TokenID.terrain_sample_nbuffer: // terrain sample nbuffer
+                    this.skip(this.getByte());
+                    tile.nBuffer = this.getStringU(this.getShort());
+                    break;
+                case TokenID.terrain_sample_fbuffer: // terrain sample fbuffer
+                    this.skip(this.getByte());
+                    tile.fBuffer = this.getStringU(this.getShort());
+                    break;
+                case TokenID.terrain_alwaysselect_maxdist: // terrain always select maxdist
+                case TokenID.terrain_errthreshold_scale: // terrain errthreshold_scale
                 case TokenID.terrain_sample_asbuffer: // ??
                 case TokenID.terrain_sample_usbuffer: // ??
                     this.skip(len);

@@ -18,8 +18,15 @@ export class MstsTile extends MstsObject {
 
     type: string;
     waterLevel: number[];
-    floor: number;
-    scale: number;
+    floor!: number;
+    scale!: number;
+    nsamples!: number;
+    rotation!: number;
+    size!: number;
+    yBuffer!: string;
+    eBuffer!: string;
+    nBuffer!: string;
+    fBuffer!: string;
     patches: tile_patch[];
     textures: string[];
     microTextures: string[];
@@ -35,8 +42,6 @@ export class MstsTile extends MstsObject {
 
         this.type = 'tile';
         this.waterLevel = [];
-        this.floor = 0;
-        this.scale = 0;
         this.patches = [];
         this.textures = [];
         this.microTextures = [];
