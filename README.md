@@ -7,7 +7,7 @@ TypeScript parser for Microsoft Train Simulator (MSTS) file formats.
 - ✅ Parse MSTS Shape files (.s)
 - ✅ Parse MSTS Texture files (.ace)
 - ⚠️ Parse MSTS World files (.w)
-- ⚠️ Parse MSTS Tile files (.t)
+- ✅/⚠️ Parse MSTS Tile files (.t)
 - ✅ Full TypeScript support
 - ✅ Works in Node.js and browsers
 

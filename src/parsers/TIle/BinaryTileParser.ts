@@ -1,13 +1,15 @@
-import { MstsTile } from "../../types/MstsTile";
+import { MstsTile, TerrainShader, TerrainTexSlot, TerrainUVCalc, TerrainPatchset, TilePatch } from "../../types/MstsTile";
 import { IMstsParser } from "../IMstsParser";
 import { BinaryParser } from "../BinaryParser";
 import { TokenID } from "../TokenID";
+import { ParserContext } from "../ParserContext";
 
 export class BinaryTileParser extends BinaryParser implements IMstsParser<MstsTile> {
 
     async parse(): Promise<MstsTile> {
 
         const tile = new MstsTile();
+        const context = new ParserContext();
 
         for (; this.offset < this.buffer.length;) {
             const code = this.getInt();
@@ -17,117 +19,209 @@ export class BinaryTileParser extends BinaryParser implements IMstsParser<MstsTi
             const len = this.getInt();
 
             /** beginning offset of the block */
-            // const offset0 = this.offset;
+            const offset0 = this.offset;
+            
+            /** end offset of the block */
+            const offsetEnd = offset0 + len;
+
+            // Before processing the token, remove all finished blocks from the stack
+            context.popFinishedBlocks(offset0);
 
             switch (code) {
                 case TokenID.terrain: // terrain
+                    this.getString();
+                    context.push(TokenID.terrain, {}, offsetEnd);
+                    break;
+                case TokenID.terrain_errthreshold_scale: // terrain_errthreshold_scale
+                    this.getString();
+                    tile.errThresholdScale = this.getFloat();
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.terrain_water_height_offset: // terrain_water_height_offset
+                    this.getString();
+                    tile.waterLevelOffsets = [];
+                    const numWaterOffsets = (offsetEnd - this.offset) / 4;
+                    for (let i = 0; i < numWaterOffsets; i++) {
+                        tile.waterLevelOffsets.push(this.getFloat());
+                    }
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.terrain_alwaysselect_maxdist: // terrain_alwaysselect_maxdist
+                    this.getString();
+                    tile.alwaysSelectMaxDist = this.getInt();
+                    this.offset = offsetEnd;
+                    break;
                 case TokenID.terrain_samples: // terrain_samples
                     this.getString();
+                    context.push(TokenID.terrain_samples, {}, offsetEnd);
                     break;
-                case TokenID.terrain_sample_floor: // terrain sample floor
-                    this.getString();
-                    tile.floor = this.getFloat();
-                    break;
-                case TokenID.terrain_sample_scale: // terrain sample scale
-                    this.getString();
-                    tile.scale = this.getFloat();
-                    break;
-                case TokenID.terrain_nsamples: // terrain nsamples
+                case TokenID.terrain_nsamples: // terrain_nsamples
                     this.getString();
                     tile.nsamples = this.getInt();
+                    this.offset = offsetEnd;
                     break;
-                case TokenID.terrain_sample_rotation: // terrain sample rotation
+                case TokenID.terrain_sample_rotation: // terrain_sample_rotation
                     this.getString();
-                    tile.rotation = this.getFloat();
+                    tile.sampleRotation = this.getFloat();
+                    this.offset = offsetEnd;
                     break;
-                case TokenID.terrain_sample_size: // terrain sample size
+                case TokenID.terrain_sample_floor: // terrain_sample_floor
+                    this.getString();
+                    tile.floor = this.getFloat();
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.terrain_sample_scale: // terrain_sample_scale
+                    this.getString();
+                    tile.scale = this.getFloat();
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.terrain_sample_size: // terrain_sample_size
                     this.getString();
                     tile.size = this.getFloat();
+                    this.offset = offsetEnd;
                     break;
-                case TokenID.terrain_sample_ybuffer: // terrain sample ybuffer
+                case TokenID.terrain_sample_asbuffer: // terrain_sample_asbuffer (format unknown)
                     this.getString();
-                    tile.yBuffer = this.getStringU(this.getShort());
+                    // Skip unknown buffer format
+                    this.offset = offsetEnd;
                     break;
-                case TokenID.terrain_sample_ebuffer: // terrain sample ebuffer
+                case TokenID.terrain_sample_usbuffer: // terrain_sample_usbuffer (format unknown)
                     this.getString();
-                    tile.eBuffer = this.getStringU(this.getShort());
+                    // Skip unknown buffer format
+                    this.offset = offsetEnd;
                     break;
-                case TokenID.terrain_sample_nbuffer: // terrain sample nbuffer
-                    this.getString();
-                    tile.nBuffer = this.getStringU(this.getShort());
-                    break;
-                case TokenID.terrain_sample_fbuffer: // terrain sample fbuffer
+                case TokenID.terrain_sample_fbuffer: // terrain_sample_fbuffer
                     this.getString();
                     tile.fBuffer = this.getStringU(this.getShort());
+                    this.offset = offsetEnd;
                     break;
-                case TokenID.terrain_alwaysselect_maxdist: // terrain always select maxdist
-                case TokenID.terrain_errthreshold_scale: // terrain errthreshold_scale
-                case TokenID.terrain_sample_asbuffer: // ??
-                case TokenID.terrain_sample_usbuffer: // ??
-                    this.skip(len);
-                    break;
-                case TokenID.terrain_water_height_offset: // water level
-                    const l = this.getByte();
-                    this.skip(l);
-                    tile.waterLevel = [];
-                    for (let i = 0; i < len - l - 1; i += 4) {
-                        tile.waterLevel.push(this.getFloat());
-                    }
-                    break;
-                case TokenID.terrain_patches: // terrain patches
-                case TokenID.terrain_patchset: // terrain patchset
-                case TokenID.terrain_patchset_patches: // terrain patchset patches
+                case TokenID.terrain_sample_ybuffer: // terrain_sample_ybuffer
                     this.getString();
+                    tile.yBuffer = this.getStringU(this.getShort());
+                    this.offset = offsetEnd;
                     break;
-                case TokenID.terrain_patchsets: // terrain patchsets
+                case TokenID.terrain_sample_ebuffer: // terrain_sample_ebuffer
                     this.getString();
-                    this.getInt();
+                    tile.eBuffer = this.getStringU(this.getShort());
+                    this.offset = offsetEnd;
                     break;
-                case TokenID.terrain_patchset_patch: // terrain patchset patch
+                case TokenID.terrain_sample_nbuffer: // terrain_sample_nbuffer
                     this.getString();
-                    let patch: any = {};
-                    patch.flags = this.getInt();
-                    patch.centerX = this.getFloat();
-                    this.getFloat();
-                    patch.centerZ = this.getFloat();
-                    this.getFloat();
-                    this.getFloat();
-                    this.getFloat();
-                    patch.texIndex = this.getInt();
-                    patch.u0 = this.getFloat();
-                    patch.v0 = this.getFloat();
-                    patch.dudx = this.getFloat();
-                    patch.dudz = this.getFloat();
-                    patch.dvdx = this.getFloat();
-                    patch.dvdz = this.getFloat();
-                    this.getFloat();
-                    tile.patches.push(patch);
+                    tile.nBuffer = this.getStringU(this.getShort());
+                    this.offset = offsetEnd;
                     break;
-                case TokenID.terrain_shaders: // terrain shaders
+                case TokenID.terrain_shaders: // terrain_shaders
                     this.getString();
-                    this.getInt();
+                    const shaderCount = this.getInt();
+                    context.push(TokenID.terrain_shaders, { count: shaderCount }, offsetEnd);
                     break;
-                case TokenID.terrain_shader: // terrain shader
+                case TokenID.terrain_shader: // terrain_shader
                     this.getString();
-                    const shader = this.getStringU(this.getShort());
+                    const shaderFilename = this.getStringU(this.getShort());
+                    const shader: TerrainShader = {
+                        filename: shaderFilename,
+                        texSlots: [],
+                        uvCalcs: []
+                    };
                     tile.shaders.push(shader);
+                    context.push(TokenID.terrain_shader, {}, offsetEnd);
                     break;
-                case TokenID.terrain_texslots: // terrain texslots
+                case TokenID.terrain_texslots: // terrain_texslots
                     this.getString();
-                    this.getInt();
+                    const texSlotCount = this.getInt();
+                    context.push(TokenID.terrain_texslots, { count: texSlotCount }, offsetEnd);
                     break;
-                case TokenID.terrain_texslot: // terrain texslot
+                case TokenID.terrain_texslot: // terrain_texslot
                     this.getString();
-                    let s = this.getStringU(this.getShort());
-                    this.getInt();
-                    let n = this.getInt();
-                    if (n == 0)
-                        tile.textures.push(s);
-                    else if (n == 1)
-                        tile.microTextures.push(s);
+                    const texSlot: TerrainTexSlot = {
+                        filename: this.getStringU(this.getShort()),
+                        textureIndex: this.getInt(),
+                        textureType: this.getInt()
+                    };
+                    if (tile.shaders.length > 0) {
+                        tile.shaders[tile.shaders.length - 1].texSlots.push(texSlot);
+                    }
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.terrain_uvcalcs: // terrain_uvcalcs
+                    this.getString();
+                    const uvCalcCount = this.getInt();
+                    context.push(TokenID.terrain_uvcalcs, { count: uvCalcCount }, offsetEnd);
+                    break;
+                case TokenID.terrain_uvcalc: // terrain_uvcalc
+                    this.getString();
+                    const uvCalc: TerrainUVCalc = {
+                        texSlotIndex: this.getInt(),
+                        terrainShaderIndex: this.getInt(),
+                        uvCalcMode: this.getInt(),
+                        value: this.getFloat()
+                    };
+                    if (tile.shaders.length > 0) {
+                        tile.shaders[tile.shaders.length - 1].uvCalcs.push(uvCalc);
+                    }
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.terrain_patches: // terrain_patches
+                    this.getString();
+                    context.push(TokenID.terrain_patches, {}, offsetEnd);
+                    break;
+                case TokenID.terrain_patchsets: // terrain_patchsets
+                    this.getString();
+                    const patchsetCount = this.getInt();
+                    context.push(TokenID.terrain_patchsets, { count: patchsetCount }, offsetEnd);
+                    break;
+                case TokenID.terrain_patchset: // terrain_patchset
+                    this.getString();
+                    const patchset: TerrainPatchset = {
+                        distance: 0,
+                        npatches: 0,
+                        patches: []
+                    };
+                    tile.patchsets.push(patchset);
+                    context.push(TokenID.terrain_patchset, {}, offsetEnd);
+                    break;
+                case TokenID.terrain_patchset_distance: // terrain_patchset_distance
+                    this.getString();
+                    if (tile.patchsets.length > 0) {
+                        tile.patchsets[tile.patchsets.length - 1].distance = this.getInt();
+                    }
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.terrain_patchset_npatches: // terrain_patchset_npatches
+                    this.getString();
+                    if (tile.patchsets.length > 0) {
+                        tile.patchsets[tile.patchsets.length - 1].npatches = this.getInt();
+                    }
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.terrain_patchset_patches: // terrain_patchset_patches
+                    this.getString();
+                    context.push(TokenID.terrain_patchset_patches, {}, offsetEnd);
+                    break;
+                case TokenID.terrain_patchset_patch: // terrain_patchset_patch
+                    this.getString();
+                    const patch: TilePatch = {
+                        flags: this.getInt(),
+                        centerX: this.getFloat(),
+                        centerY: this.getFloat(),
+                        centerZ: this.getFloat(),
+                        patchRadius: [this.getFloat(), this.getFloat(), this.getFloat()][2], // Hack to read 3 floats, use last as radius
+                        terrainShaderIndex: this.getInt(),
+                        u: this.getFloat(),
+                        v: this.getFloat(),
+                        xU: this.getFloat(),
+                        zU: this.getFloat(),
+                        xV: this.getFloat(),
+                        zV: this.getFloat(),
+                        errorBias: this.getFloat()
+                    };
+                    if (tile.patchsets.length > 0) {
+                        tile.patchsets[tile.patchsets.length - 1].patches.push(patch);
+                    }
+                    this.offset = offsetEnd;
                     break;
                 default:
-                    this.skip(len);
+                    this.offset = offsetEnd;
                     break;
             }
         }
