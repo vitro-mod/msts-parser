@@ -22,42 +22,42 @@ export class BinaryTileParser extends BinaryParser implements IMstsParser<MstsTi
             switch (code) {
                 case TokenID.terrain: // terrain
                 case TokenID.terrain_samples: // terrain_samples
-                    this.skip(this.getByte());
+                    this.getString();
                     break;
                 case TokenID.terrain_sample_floor: // terrain sample floor
-                    this.skip(this.getByte());
+                    this.getString();
                     tile.floor = this.getFloat();
                     break;
                 case TokenID.terrain_sample_scale: // terrain sample scale
-                    this.skip(this.getByte());
+                    this.getString();
                     tile.scale = this.getFloat();
                     break;
                 case TokenID.terrain_nsamples: // terrain nsamples
-                    this.skip(this.getByte());
+                    this.getString();
                     tile.nsamples = this.getInt();
                     break;
                 case TokenID.terrain_sample_rotation: // terrain sample rotation
-                    this.skip(this.getByte());
+                    this.getString();
                     tile.rotation = this.getFloat();
                     break;
                 case TokenID.terrain_sample_size: // terrain sample size
-                    this.skip(this.getByte());
+                    this.getString();
                     tile.size = this.getFloat();
                     break;
                 case TokenID.terrain_sample_ybuffer: // terrain sample ybuffer
-                    this.skip(this.getByte());
+                    this.getString();
                     tile.yBuffer = this.getStringU(this.getShort());
                     break;
                 case TokenID.terrain_sample_ebuffer: // terrain sample ebuffer
-                    this.skip(this.getByte());
+                    this.getString();
                     tile.eBuffer = this.getStringU(this.getShort());
                     break;
                 case TokenID.terrain_sample_nbuffer: // terrain sample nbuffer
-                    this.skip(this.getByte());
+                    this.getString();
                     tile.nBuffer = this.getStringU(this.getShort());
                     break;
                 case TokenID.terrain_sample_fbuffer: // terrain sample fbuffer
-                    this.skip(this.getByte());
+                    this.getString();
                     tile.fBuffer = this.getStringU(this.getShort());
                     break;
                 case TokenID.terrain_alwaysselect_maxdist: // terrain always select maxdist
@@ -77,14 +77,14 @@ export class BinaryTileParser extends BinaryParser implements IMstsParser<MstsTi
                 case TokenID.terrain_patches: // terrain patches
                 case TokenID.terrain_patchset: // terrain patchset
                 case TokenID.terrain_patchset_patches: // terrain patchset patches
-                    this.skip(this.getByte());
+                    this.getString();
                     break;
                 case TokenID.terrain_patchsets: // terrain patchsets
-                    this.skip(this.getByte());
+                    this.getString();
                     this.getInt();
                     break;
                 case TokenID.terrain_patchset_patch: // terrain patchset patch
-                    this.skip(this.getByte());
+                    this.getString();
                     let patch: any = {};
                     patch.flags = this.getInt();
                     patch.centerX = this.getFloat();
@@ -104,20 +104,20 @@ export class BinaryTileParser extends BinaryParser implements IMstsParser<MstsTi
                     tile.patches.push(patch);
                     break;
                 case TokenID.terrain_shaders: // terrain shaders
-                    this.skip(this.getByte());
+                    this.getString();
                     this.getInt();
                     break;
                 case TokenID.terrain_shader: // terrain shader
-                    this.skip(this.getByte());
+                    this.getString();
                     const shader = this.getStringU(this.getShort());
                     tile.shaders.push(shader);
                     break;
                 case TokenID.terrain_texslots: // terrain texslots
-                    this.skip(this.getByte());
+                    this.getString();
                     this.getInt();
                     break;
                 case TokenID.terrain_texslot: // terrain texslot
-                    this.skip(this.getByte());
+                    this.getString();
                     let s = this.getStringU(this.getShort());
                     this.getInt();
                     let n = this.getInt();
