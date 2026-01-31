@@ -117,9 +117,9 @@ export class BinaryTileParser extends BinaryParser implements IMstsParser<MstsTi
                     break;
                 case TokenID.terrain_shader: // terrain_shader
                     this.getString();
-                    const shaderFilename = this.getStringU(this.getShort());
+                    const shaderName = this.getStringU(this.getShort());
                     const shader: TerrainShader = {
-                        filename: shaderFilename,
+                        name: shaderName,
                         texSlots: [],
                         uvCalcs: []
                     };

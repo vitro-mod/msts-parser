@@ -34,8 +34,8 @@ export type TerrainTexSlot = {
  * Based on terrain_shader: :string :terrain_texslots :terrain_uvcalcs
  */
 export type TerrainShader = {
-    /** Shader filename */
-    filename: string;
+    /** Shader name */
+    name: string;
     /** Texture slots */
     texSlots: TerrainTexSlot[];
     /** UV calculations */
