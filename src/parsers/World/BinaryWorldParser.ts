@@ -264,13 +264,19 @@ export class BinaryWorldParser extends BinaryParser implements IMstsParser<MstsW
                 case TokenID.TrackSection:
                     this.getString();
                     if (currentObject && (currentObject as any).trackSections) {
-                        const section: TrackSection = {
-                            sectionCurve: this.getInt(),
-                            param1: this.getInt(),
-                            param2: this.getFloat(),
-                            param3: this.getFloat()
-                        };
+                        const section: Partial<TrackSection> = {} as any;
                         (currentObject as any).trackSections.push(section);
+                        
+                        // Read the nested SectionCurve token manually
+                        this.getInt(); // SectionCurve token ID
+                        this.getInt(); // SectionCurve length
+                        this.getString(); // SectionCurve name
+                        section.sectionCurve = this.getInt();
+                        
+                        // Read the remaining values
+                        section.uId = this.getInt();
+                        section.arcOrLength = this.getFloat();
+                        section.radius = this.getFloat();
                     }
                     this.offset = offsetEnd;
                     break;

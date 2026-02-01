@@ -35,12 +35,14 @@ export type TrItemId = {
     itemID: number;
 };
 
+export type SectionCurve = number;
+
 export type TrackSection = {
-    sectionCurve: number;
-    param1: number;
-    param2: number;
-    param3: number;
-};
+    sectionCurve: SectionCurve;
+    uId: number;
+    arcOrLength: number;
+    radius: number;
+}
 
 export type SignalUnit = {
     index: number;

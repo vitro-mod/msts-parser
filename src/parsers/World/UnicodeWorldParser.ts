@@ -1,4 +1,4 @@
-import { MstsWorld, WorldObject, Position, QDirection, Matrix3x3, TrItemId, TrackSection, SignalUnit } from "../../types/MstsWorld";
+import { MstsWorld, WorldObject, Position, QDirection, Matrix3x3, TrItemId, TrackSection, SignalUnit, CarSpawner, CollideObject, Dyntrack, Forest, Gantry, Hazard, LevelCr, Pickup, Platform, Siding, Signal, Speedpost, Static, Telepole, TrackObj, Transfer } from "../../types/MstsWorld";
 import { IMstsParser } from "../IMstsParser";
 import { UnicodeParser } from "../UnicodeParser";
 
@@ -110,7 +110,7 @@ export class UnicodeWorldParser extends UnicodeParser implements IMstsParser<Mst
                     }
                     break;
                 case "carspawner": {
-                    const obj: any = { type: 'CarSpawner' };
+                    const obj: CarSpawner = { type: 'CarSpawner' } as any;
                     parseCommonFields(obj, data);
                     parseTrItemIds(obj, data);
                     this.forEach(data, "carfrequency", (a: any) => obj.carFrequency = parseFloat(a[0]));
@@ -119,21 +119,21 @@ export class UnicodeWorldParser extends UnicodeParser implements IMstsParser<Mst
                     break;
                 }
                 case "collideobject": {
-                    const obj: any = { type: 'CollideObject' };
+                    const obj: CollideObject = { type: 'CollideObject' } as any;
                     parseCommonFields(obj, data);
                     result.objects.push(obj);
                     break;
                 }
                 case "dyntrack": {
-                    const obj: any = { type: 'Dyntrack', trackSections: [] };
+                    const obj: Dyntrack = { type: 'Dyntrack', trackSections: [] } as any;
                     parseCommonFields(obj, data);
                     this.forEach(data, "tracksections", (a: any) => {
                         this.forEach(a, "tracksection", (ts: any) => {
-                            obj.trackSections.push({
-                                sectionCurve: parseInt(ts[0]),
-                                param1: parseInt(ts[1]),
-                                param2: parseFloat(ts[2]),
-                                param3: parseFloat(ts[3])
+                            (obj.trackSections as any).push({
+                                sectionCurve: parseInt(ts[1][0]),
+                                uId: parseInt(ts[2]),
+                                arcOrLength: parseFloat(ts[3]),
+                                radius: parseFloat(ts[4])
                             });
                         });
                     });
@@ -141,7 +141,7 @@ export class UnicodeWorldParser extends UnicodeParser implements IMstsParser<Mst
                     break;
                 }
                 case "forest": {
-                    const obj: any = { type: 'Forest' };
+                    const obj: Forest = { type: 'Forest' } as any;
                     parseCommonFields(obj, data);
                     this.forEach(data, "treetexture", (a: any) => obj.treeTexture = a[0]);
                     this.forEach(data, "scalerange", (a: any) => obj.scaleRange = [parseFloat(a[0]), parseFloat(a[1])]);
@@ -152,20 +152,20 @@ export class UnicodeWorldParser extends UnicodeParser implements IMstsParser<Mst
                     break;
                 }
                 case "gantry": {
-                    const obj: any = { type: 'Gantry' };
+                    const obj: Gantry = { type: 'Gantry' } as any;
                     parseCommonFields(obj, data);
                     result.objects.push(obj);
                     break;
                 }
                 case "hazard": {
-                    const obj: any = { type: 'Hazard' };
+                    const obj: Hazard = { type: 'Hazard' } as any;
                     parseCommonFields(obj, data);
                     parseTrItemIds(obj, data);
                     result.objects.push(obj);
                     break;
                 }
                 case "levelcr": {
-                    const obj: any = { type: 'LevelCr' };
+                    const obj: LevelCr = { type: 'LevelCr' } as any;
                     parseCommonFields(obj, data);
                     parseTrItemIds(obj, data);
                     this.forEach(data, "levelcrparameters", (a: any) => {
@@ -192,7 +192,7 @@ export class UnicodeWorldParser extends UnicodeParser implements IMstsParser<Mst
                     break;
                 }
                 case "pickup": {
-                    const obj: any = { type: 'Pickup' };
+                    const obj: Pickup = { type: 'Pickup' } as any;
                     parseCommonFields(obj, data);
                     parseTrItemIds(obj, data);
                     this.forEach(data, "speedrange", (a: any) => {
@@ -211,7 +211,7 @@ export class UnicodeWorldParser extends UnicodeParser implements IMstsParser<Mst
                     break;
                 }
                 case "platform": {
-                    const obj: any = { type: 'Platform' };
+                    const obj: Platform = { type: 'Platform' } as any;
                     parseCommonFields(obj, data);
                     parseTrItemIds(obj, data);
                     this.forEach(data, "platformdata", (a: any) => obj.platformData = parseInt(a[0], 16));
@@ -219,7 +219,7 @@ export class UnicodeWorldParser extends UnicodeParser implements IMstsParser<Mst
                     break;
                 }
                 case "siding": {
-                    const obj: any = { type: 'Siding' };
+                    const obj: Siding = { type: 'Siding' } as any;
                     parseCommonFields(obj, data);
                     parseTrItemIds(obj, data);
                     this.forEach(data, "sidingdata", (a: any) => obj.sidingData = parseInt(a[0], 16));
@@ -227,7 +227,7 @@ export class UnicodeWorldParser extends UnicodeParser implements IMstsParser<Mst
                     break;
                 }
                 case "signal": {
-                    const obj: any = { type: 'Signal', signalUnits: [] };
+                    const obj: Signal = { type: 'Signal', signalUnits: [] } as any;
                     parseCommonFields(obj, data);
                     this.forEach(data, "signalsubobj", (a: any) => obj.signalSubObj = parseInt(a[0], 16));
                     this.forEach(data, "signalunits", (a: any) => {
@@ -245,7 +245,7 @@ export class UnicodeWorldParser extends UnicodeParser implements IMstsParser<Mst
                     break;
                 }
                 case "speedpost": {
-                    const obj: any = { type: 'Speedpost' };
+                    const obj: Speedpost = { type: 'Speedpost' } as any;
                     parseCommonFields(obj, data);
                     parseTrItemIds(obj, data);
                     this.forEach(data, "speed_digit_tex", (a: any) => obj.speedDigitTex = a[0]);
@@ -270,13 +270,13 @@ export class UnicodeWorldParser extends UnicodeParser implements IMstsParser<Mst
                     break;
                 }
                 case "static": {
-                    const obj: any = { type: 'Static' };
+                    const obj: Static = { type: 'Static' } as any;
                     parseCommonFields(obj, data);
                     result.objects.push(obj);
                     break;
                 }
                 case "telepole": {
-                    const obj: any = { type: 'Telepole' };
+                    const obj: Telepole = { type: 'Telepole' } as any;
                     parseCommonFields(obj, data);
                     this.forEach(data, "population", (a: any) => obj.population = parseInt(a[0]));
                     this.forEach(data, "startposition", (a: any) => {
@@ -310,13 +310,13 @@ export class UnicodeWorldParser extends UnicodeParser implements IMstsParser<Mst
                     break;
                 }
                 case "trackobj": {
-                    const obj: any = { type: 'TrackObj' };
+                    const obj: TrackObj = { type: 'TrackObj' } as any;
                     parseCommonFields(obj, data);
                     result.objects.push(obj);
                     break;
                 }
                 case "transfer": {
-                    const obj: any = { type: 'Transfer' };
+                    const obj: Transfer = { type: 'Transfer' } as any;
                     parseCommonFields(obj, data);
                     this.forEach(data, "width", (a: any) => obj.width = parseFloat(a[0]));
                     this.forEach(data, "height", (a: any) => obj.height = parseFloat(a[0]));
