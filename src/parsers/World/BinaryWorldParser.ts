@@ -1,4 +1,4 @@
-import { MstsWorld, WorldObject, Position, QDirection, Matrix3x3, JNodePosn, TrItemId, TrackSection, SignalUnit, LevelCrData, LevelCrParameters, LevelCrTiming, PickupAnimData, PickupCapacity, PickupType, SpeedRange, SpeedSignShape, SpeedTextSize, Direction } from "../../types/MstsWorld";
+import { MstsWorld, WorldObject, Position, QDirection, Matrix3x3, JNodePosn, TrItemId, TrackSection, SignalUnit, LevelCrData, LevelCrParameters, LevelCrTiming, PickupAnimData, PickupCapacity, PickupType, SpeedRange, SpeedSignShape, SpeedTextSize, Direction, ForestScaleRange, ForestArea, ForestTreeSize } from "../../types/MstsWorld";
 import { BinaryParser } from "../BinaryParser";
 import { TokenID } from "../TokenID";
 import { IMstsParser } from "../IMstsParser";
@@ -216,17 +216,17 @@ export class BinaryWorldParser extends BinaryParser implements IMstsParser<MstsW
                     break;
                 case TokenID.ScaleRange:
                     this.getString();
-                    if (currentObject) (currentObject as any).scaleRange = [this.getFloat(), this.getFloat()];
+                    if (currentObject) (currentObject as any).scaleRange = { min: this.getFloat(), max: this.getFloat() };
                     this.offset = offsetEnd;
                     break;
                 case TokenID.Area:
                     this.getString();
-                    if (currentObject) (currentObject as any).area = [this.getFloat(), this.getFloat()];
+                    if (currentObject) (currentObject as any).area = { x: this.getFloat(), z: this.getFloat() };
                     this.offset = offsetEnd;
                     break;
                 case TokenID.TreeSize:
                     this.getString();
-                    if (currentObject) (currentObject as any).treeSize = [this.getFloat(), this.getFloat()];
+                    if (currentObject) (currentObject as any).treeSize = { width: this.getFloat(), height: this.getFloat() };
                     this.offset = offsetEnd;
                     break;
                 case TokenID.Population:

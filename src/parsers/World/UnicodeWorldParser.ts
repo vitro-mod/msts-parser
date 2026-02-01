@@ -144,9 +144,9 @@ export class UnicodeWorldParser extends UnicodeParser implements IMstsParser<Mst
                     const obj: Forest = { type: 'Forest' } as any;
                     parseCommonFields(obj, data);
                     this.forEach(data, "treetexture", (a: any) => obj.treeTexture = a[0]);
-                    this.forEach(data, "scalerange", (a: any) => obj.scaleRange = [parseFloat(a[0]), parseFloat(a[1])]);
-                    this.forEach(data, "area", (a: any) => obj.area = [parseFloat(a[0]), parseFloat(a[1])]);
-                    this.forEach(data, "treesize", (a: any) => obj.treeSize = [parseFloat(a[0]), parseFloat(a[1])]);
+                    this.forEach(data, "scalerange", (a: any) => obj.scaleRange = { min: parseFloat(a[0]), max: parseFloat(a[1]) });
+                    this.forEach(data, "area", (a: any) => obj.area = { x: parseFloat(a[0]), z: parseFloat(a[1]) });
+                    this.forEach(data, "treesize", (a: any) => obj.treeSize = { width: parseFloat(a[0]), height: parseFloat(a[1]) });
                     this.forEach(data, "population", (a: any) => obj.population = parseInt(a[0]));
                     result.objects.push(obj);
                     break;

@@ -85,6 +85,21 @@ export type SpeedRange = {
     max: number;
 };
 
+export type ForestScaleRange = {
+    min: number;
+    max: number;
+};
+
+export type ForestArea = {
+    x: number;
+    z: number;
+};
+
+export type ForestTreeSize = {
+    width: number;
+    height: number;
+};
+
 export type SpeedSignShape = {
     count: number;
     values: number[][];
@@ -157,10 +172,10 @@ export type Forest = {
     type: 'Forest';
     uiD: number;
     treeTexture?: string;
-    scaleRange: [number, number];
-    area: [number, number];
+    scaleRange: ForestScaleRange;
+    area: ForestArea;
     population: number;
-    treeSize: [number, number];
+    treeSize: ForestTreeSize;
     staticFlags?: number;
     position: Position;
     qDirection?: QDirection;
