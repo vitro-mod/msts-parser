@@ -1,24 +1,16 @@
-import { MstsWorld } from "../../types/MstsWorld";
+import { MstsWorld, WorldObject, Position, QDirection, Matrix3x3, JNodePosn, TrItemId, TrackSection, SignalUnit, LevelCrData, LevelCrParameters, LevelCrTiming, PickupAnimData, PickupCapacity, PickupType, SpeedRange, SpeedSignShape, SpeedTextSize, Direction } from "../../types/MstsWorld";
 import { BinaryParser } from "../BinaryParser";
 import { TokenID } from "../TokenID";
 import { IMstsParser } from "../IMstsParser";
+import { ParserContext } from "../ParserContext";
 
 export class BinaryWorldParser extends BinaryParser implements IMstsParser<MstsWorld> {
 
     async parse(): Promise<MstsWorld> {
 
         const result = new MstsWorld();
-
-        let object: any = null;
-
-        const tokens = Object.fromEntries(
-            Object.entries(TokenID).map(([key, value]) => [value, key])
-        );
-
-        const addObject = function (type: string) {
-            object = { type: type };
-            result.objects.push(object);
-        }
+        const context = new ParserContext();
+        let currentObject: Partial<WorldObject> | null = null;
 
         for (; this.offset < this.buffer.length;) {
             const code = this.getShort() + 300;
@@ -27,148 +19,390 @@ export class BinaryWorldParser extends BinaryParser implements IMstsParser<MstsW
             if (code == 0) break;
 
             const len = this.getInt();
-            // const offset0 = this.offset;
+            const offset0 = this.offset;
+            const offsetEnd = offset0 + len;
+
+            context.popFinishedBlocks(offset0);
 
             switch (code) {
                 case TokenID.Tr_Worldfile:
                     this.getString();
+                    context.push(TokenID.Tr_Worldfile, {}, offsetEnd);
                     break;
-                case TokenID.Static:
-                case TokenID.Signal:
+                case TokenID.Tr_Watermark:
                     this.getString();
-                    addObject("static");
+                    result.trWatermark = this.getInt();
+                    this.offset = offsetEnd;
                     break;
-                case TokenID.TrackObj:
+                case TokenID.VDbIdCount:
                     this.getString();
-                    addObject("track");
+                    result.vDbIdCount = this.getInt();
+                    this.offset = offsetEnd;
                     break;
-                case TokenID.Dyntrack:
+                case TokenID.ViewDbSphere:
                     this.getString();
-                    addObject("dyntrack");
-                    object.trackSections = [];
+                    // ViewDbSphere parsing - skip for now as it has nested structure
+                    this.offset = offsetEnd;
                     break;
-                case TokenID.Gantry:
+                case TokenID.CarSpawner:
                     this.getString();
-                    addObject("gantry");
+                    currentObject = { type: 'CarSpawner', trItemIds: [] } as any;
+                    result.objects.push(currentObject as WorldObject);
+                    context.push(TokenID.CarSpawner, {}, offsetEnd);
                     break;
                 case TokenID.CollideObject:
                     this.getString();
-                    addObject("collideobject");
+                    currentObject = { type: 'CollideObject' } as any;
+                    result.objects.push(currentObject as WorldObject);
+                    context.push(TokenID.CollideObject, {}, offsetEnd);
                     break;
-                case TokenID.LevelCr:
+                case TokenID.Dyntrack:
                     this.getString();
-                    addObject("levelcr");
-                    break;
-                case TokenID.Speedpost:
-                    this.getString();
-                    addObject("speedpost");
-                    break;
-                case TokenID.FileName:
-                    this.getString();
-                    object.filename = this.getStringU(this.getShort());
-                    break;
-                case TokenID.Position:
-                    this.getString();
-                    object.position = [this.getFloat(), this.getFloat(), this.getFloat()];
-                    break;
-                case TokenID.QDirection:
-                    this.getString();
-                    object.qdirection = [this.getFloat(), this.getFloat(), this.getFloat(), this.getFloat()];
-                    break;
-                case TokenID.Matrix3x3:
-                    this.getString()
-                    object.matrix3x3 = [
-                        this.getFloat(), this.getFloat(), this.getFloat(),
-                        this.getFloat(), this.getFloat(), this.getFloat(),
-                        this.getFloat(), this.getFloat(), this.getFloat(),
-                    ];
-                    break;
-                case TokenID.StaticFlags:
-                    this.getString();
-                    object.staticFlags = this.getInt();
-                    break;
-                case TokenID.TrackSections:
-                    this.getString();
-                    break;
-                case TokenID.TrackSection:
-                    if (len == 26) {
-                        this.getString();
-                        this.getInt(); //section curve code
-                        this.getInt(); //section curve len
-                        this.getString();
-                        this.getInt(); //section curve flag
-                        this.getInt(); //section id
-                        object.trackSections.push({
-                            dist: this.getFloat(),
-                            radius: this.getFloat()
-                        });
-                    } else {
-                        this.offset += len;
-                    }
-                    break;
-                case TokenID.Hazard:
-                    this.getString();
-                    addObject("hazard");
+                    currentObject = { type: 'Dyntrack', trackSections: [] } as any;
+                    result.objects.push(currentObject as WorldObject);
+                    context.push(TokenID.Dyntrack, {}, offsetEnd);
                     break;
                 case TokenID.Forest:
                     this.getString();
-                    addObject("forest");
+                    currentObject = { type: 'Forest' } as any;
+                    result.objects.push(currentObject as WorldObject);
+                    context.push(TokenID.Forest, {}, offsetEnd);
+                    break;
+                case TokenID.Gantry:
+                    this.getString();
+                    currentObject = { type: 'Gantry' } as any;
+                    result.objects.push(currentObject as WorldObject);
+                    context.push(TokenID.Gantry, {}, offsetEnd);
+                    break;
+                case TokenID.Hazard:
+                    this.getString();
+                    currentObject = { type: 'Hazard', trItemIds: [] } as any;
+                    result.objects.push(currentObject as WorldObject);
+                    context.push(TokenID.Hazard, {}, offsetEnd);
+                    break;
+                case TokenID.LevelCr:
+                    this.getString();
+                    currentObject = { type: 'LevelCr', trItemIds: [] } as any;
+                    result.objects.push(currentObject as WorldObject);
+                    context.push(TokenID.LevelCr, {}, offsetEnd);
+                    break;
+                case TokenID.Pickup:
+                    this.getString();
+                    currentObject = { type: 'Pickup', trItemIds: [] } as any;
+                    result.objects.push(currentObject as WorldObject);
+                    context.push(TokenID.Pickup, {}, offsetEnd);
+                    break;
+                case TokenID.Platform:
+                    this.getString();
+                    currentObject = { type: 'Platform', trItemIds: [] } as any;
+                    result.objects.push(currentObject as WorldObject);
+                    context.push(TokenID.Platform, {}, offsetEnd);
+                    break;
+                case TokenID.Siding:
+                    this.getString();
+                    currentObject = { type: 'Siding', trItemIds: [] } as any;
+                    result.objects.push(currentObject as WorldObject);
+                    context.push(TokenID.Siding, {}, offsetEnd);
+                    break;
+                case TokenID.Signal:
+                    this.getString();
+                    currentObject = { type: 'Signal', signalUnits: [] } as any;
+                    result.objects.push(currentObject as WorldObject);
+                    context.push(TokenID.Signal, {}, offsetEnd);
+                    break;
+                case TokenID.Speedpost:
+                    this.getString();
+                    currentObject = { type: 'Speedpost', trItemIds: [] } as any;
+                    result.objects.push(currentObject as WorldObject);
+                    context.push(TokenID.Speedpost, {}, offsetEnd);
+                    break;
+                case TokenID.Static:
+                    this.getString();
+                    currentObject = { type: 'Static' } as any;
+                    result.objects.push(currentObject as WorldObject);
+                    context.push(TokenID.Static, {}, offsetEnd);
+                    break;
+                case TokenID.Telepole:
+                    this.getString();
+                    currentObject = { type: 'Telepole' } as any;
+                    result.objects.push(currentObject as WorldObject);
+                    context.push(TokenID.Telepole, {}, offsetEnd);
+                    break;
+                case TokenID.TrackObj:
+                    this.getString();
+                    currentObject = { type: 'TrackObj' } as any;
+                    result.objects.push(currentObject as WorldObject);
+                    context.push(TokenID.TrackObj, {}, offsetEnd);
+                    break;
+                case TokenID.Transfer:
+                    this.getString();
+                    currentObject = { type: 'Transfer' } as any;
+                    result.objects.push(currentObject as WorldObject);
+                    context.push(TokenID.Transfer, {}, offsetEnd);
+                    break;
+                case TokenID.UiD:
+                    this.getString();
+                    if (currentObject) (currentObject as any).uiD = this.getInt();
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.FileName:
+                    this.getString();
+                    if (currentObject) (currentObject as any).fileName = this.getStringU(this.getShort());
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.Position:
+                    this.getString();
+                    if (currentObject) {
+                        (currentObject as any).position = {
+                            x: this.getFloat(),
+                            y: this.getFloat(),
+                            z: this.getFloat()
+                        };
+                    }
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.QDirection:
+                    this.getString();
+                    if (currentObject) {
+                        (currentObject as any).qDirection = {
+                            w: this.getFloat(),
+                            x: this.getFloat(),
+                            y: this.getFloat(),
+                            z: this.getFloat()
+                        };
+                    }
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.Matrix3x3:
+                    this.getString();
+                    if (currentObject) {
+                        (currentObject as any).matrix3x3 = [
+                            this.getFloat(), this.getFloat(), this.getFloat(),
+                            this.getFloat(), this.getFloat(), this.getFloat(),
+                            this.getFloat(), this.getFloat(), this.getFloat()
+                        ];
+                    }
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.VDbId:
+                    this.getString();
+                    if (currentObject) (currentObject as any).vDbId = this.getInt();
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.StaticFlags:
+                    this.getString();
+                    if (currentObject) (currentObject as any).staticFlags = this.getInt();
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.StaticDetailLevel:
+                    this.getString();
+                    if (currentObject) (currentObject as any).staticDetailLevel = this.getInt();
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.CollideFlags:
+                    this.getString();
+                    if (currentObject) (currentObject as any).collideFlags = this.getInt();
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.CollideFunction:
+                    this.getString();
+                    if (currentObject) (currentObject as any).collideFunction = this.getInt();
+                    this.offset = offsetEnd;
                     break;
                 case TokenID.TreeTexture:
                     this.getString();
-                    object.treeTexture = this.getStringU(this.getShort());
+                    if (currentObject) (currentObject as any).treeTexture = this.getStringU(this.getShort());
+                    this.offset = offsetEnd;
                     break;
                 case TokenID.ScaleRange:
                     this.getString();
-                    object.scale = this.getFloat();
-                    object.range = this.getFloat();
+                    if (currentObject) (currentObject as any).scaleRange = [this.getFloat(), this.getFloat()];
+                    this.offset = offsetEnd;
                     break;
                 case TokenID.Area:
                     this.getString();
-                    object.areaW = this.getFloat();
-                    object.areaH = this.getFloat();
+                    if (currentObject) (currentObject as any).area = [this.getFloat(), this.getFloat()];
+                    this.offset = offsetEnd;
                     break;
                 case TokenID.TreeSize:
                     this.getString();
-                    object.sizeW = this.getFloat();
-                    object.sizeH = this.getFloat();
+                    if (currentObject) (currentObject as any).treeSize = [this.getFloat(), this.getFloat()];
+                    this.offset = offsetEnd;
                     break;
                 case TokenID.Population:
                     this.getString();
-                    object.population = this.getInt();
+                    if (currentObject) (currentObject as any).population = this.getInt();
+                    this.offset = offsetEnd;
                     break;
-                case TokenID.Transfer:
-                case TokenID.VDbId:
-                case TokenID.VDbIdCount:
-                case TokenID.ViewDbSphere:
-                case TokenID.UiD:
-                case TokenID.StaticDetailLevel:
-                case TokenID.MaxVisDistance:
-                case TokenID.NoDirLight:
-                case TokenID.Elevation:
-                case TokenID.JNodePosn:
                 case TokenID.SectionIdx:
-                case TokenID.CollideFlags:
-                case TokenID.CollideFunction:
-                case TokenID.LevelCrParameters:
-                case TokenID.LevelCrData:
-                case TokenID.LevelCrTiming:
-                case TokenID.CrashProbability:
-                case TokenID.SignalSubObj:
-                case TokenID.SignalUnits:
+                    this.getString();
+                    if (currentObject) (currentObject as any).sectionIdx = this.getInt();
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.Elevation:
+                    this.getString();
+                    if (currentObject) (currentObject as any).elevation = this.getFloat();
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.JNodePosn:
+                    this.getString();
+                    if (currentObject) {
+                        (currentObject as any).jNodePosn = {
+                            tileX: this.getInt(),
+                            tileZ: this.getInt(),
+                            x: this.getFloat(),
+                            y: this.getFloat(),
+                            z: this.getFloat()
+                        };
+                    }
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.TrackSections:
+                    this.getString();
+                    context.push(TokenID.TrackSections, {}, offsetEnd);
+                    break;
+                case TokenID.TrackSection:
+                    this.getString();
+                    if (currentObject && (currentObject as any).trackSections) {
+                        const section: TrackSection = {
+                            sectionCurve: this.getInt(),
+                            param1: this.getInt(),
+                            param2: this.getFloat(),
+                            param3: this.getFloat()
+                        };
+                        (currentObject as any).trackSections.push(section);
+                    }
+                    this.offset = offsetEnd;
+                    break;
                 case TokenID.TrItemId:
-                case TokenID.Platform:
-                case TokenID.Siding:
-                case TokenID.CarSpawner:
-                case TokenID.Tr_Watermark:
+                    this.getString();
+                    if (currentObject && (currentObject as any).trItemIds) {
+                        (currentObject as any).trItemIds.push({
+                            database: this.getInt(),
+                            itemID: this.getInt()
+                        });
+                    }
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.SignalSubObj:
+                    this.getString();
+                    if (currentObject) (currentObject as any).signalSubObj = this.getInt();
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.SignalUnits:
+                    this.getString();
+                    const unitCount = this.getInt();
+                    context.push(TokenID.SignalUnits, { count: unitCount }, offsetEnd);
+                    break;
+                case TokenID.MaxVisDistance:
+                    this.getString();
+                    if (currentObject) (currentObject as any).maxVisDistance = this.getInt();
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.NoDirLight:
+                    this.getString();
+                    if (currentObject) (currentObject as any).noDirLight = true;
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.LevelCrParameters:
+                    this.getString();
+                    if (currentObject) {
+                        (currentObject as any).levelCrParameters = {
+                            warningTime: this.getFloat(),
+                            minimumDistance: this.getFloat()
+                        };
+                    }
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.LevelCrData:
+                    this.getString();
+                    if (currentObject) {
+                        (currentObject as any).levelCrData = {
+                            flags: this.getInt(),
+                            trackCount: this.getInt()
+                        };
+                    }
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.LevelCrTiming:
+                    this.getString();
+                    if (currentObject) {
+                        (currentObject as any).levelCrTiming = {
+                            initialTiming: this.getFloat(),
+                            seriousTiming: this.getFloat(),
+                            animationTiming: this.getFloat()
+                        };
+                    }
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.CrashProbability:
+                    this.getString();
+                    if (currentObject) (currentObject as any).crashProbability = this.getInt();
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.PlatformData:
+                    this.getString();
+                    if (currentObject) (currentObject as any).platformData = this.getInt();
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.SidingData:
+                    this.getString();
+                    if (currentObject) (currentObject as any).sidingData = this.getInt();
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.CarFrequency:
+                    this.getString();
+                    if (currentObject) (currentObject as any).carFrequency = this.getFloat();
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.CarAvSpeed:
+                    this.getString();
+                    if (currentObject) (currentObject as any).carAvSpeed = this.getFloat();
+                    this.offset = offsetEnd;
+                    break;
                 case TokenID.Speed_Digit_Tex:
+                    this.getString();
+                    if (currentObject) (currentObject as any).speedDigitTex = this.getStringU(this.getShort());
+                    this.offset = offsetEnd;
+                    break;
                 case TokenID.Speed_Sign_Shape:
+                    this.getString();
+                    if (currentObject) {
+                        const count = this.getInt();
+                        const values: number[][] = [];
+                        for (let i = 0; i < count; i++) {
+                            values.push([this.getFloat(), this.getFloat(), this.getFloat(), this.getFloat()]);
+                        }
+                        (currentObject as any).speedSignShape = { count, values };
+                    }
+                    this.offset = offsetEnd;
+                    break;
                 case TokenID.Speed_Text_Size:
+                    this.getString();
+                    if (currentObject) {
+                        (currentObject as any).speedTextSize = {
+                            width: this.getFloat(),
+                            height: this.getFloat(),
+                            depth: this.getFloat()
+                        };
+                    }
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.Width:
+                    this.getString();
+                    if (currentObject) (currentObject as any).width = this.getFloat();
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.Height:
+                    this.getString();
+                    if (currentObject) (currentObject as any).height = this.getFloat();
+                    this.offset = offsetEnd;
+                    break;
                 case TokenID.comment:
-                    this.offset += len;
+                    this.offset = offsetEnd;
                     break;
                 default:
-                    this.offset += len;
+                    this.offset = offsetEnd;
                     break;
             }
         }

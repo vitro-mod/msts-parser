@@ -7,8 +7,53 @@ export { MstsObject } from './types/MstsObject';
 export { MstsRaw } from './types/MstsRaw';
 export { MstsRoute } from './types/MstsRoute';
 export { MstsTexture } from './types/MstsTexture';
-export { MstsTile, type tile_patch } from './types/MstsTile';
-export { MstsWorld } from './types/MstsWorld';
+export { 
+    MstsTile,
+    type TilePatch,
+    type tile_patch,
+    type TerrainUVCalc,
+    type TerrainTexSlot,
+    type TerrainShader,
+    type TerrainPatchset
+} from './types/MstsTile';
+export { 
+    MstsWorld,
+    type WorldObject,
+    type Position,
+    type QDirection,
+    type Matrix3x3,
+    type JNodePosn,
+    type TrItemId,
+    type TrackSection,
+    type SignalUnit,
+    type LevelCrData,
+    type LevelCrParameters,
+    type LevelCrTiming,
+    type PickupAnimData,
+    type PickupCapacity,
+    type PickupType,
+    type SpeedRange,
+    type SpeedSignShape,
+    type SpeedTextSize,
+    type Direction,
+    type ViewDbSphere,
+    type CarSpawner,
+    type CollideObject,
+    type Dyntrack,
+    type Forest,
+    type Gantry,
+    type Hazard,
+    type LevelCr,
+    type Pickup,
+    type Platform,
+    type Siding,
+    type Signal,
+    type Speedpost,
+    type Static,
+    type Telepole,
+    type TrackObj,
+    type Transfer
+} from './types/MstsWorld';
 export { 
     MstsShape,
     type Vector,
