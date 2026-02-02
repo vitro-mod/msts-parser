@@ -404,6 +404,58 @@ export class BinaryWorldParser extends BinaryParser implements IMstsParser<MstsW
                     if (currentObject) (currentObject as any).height = this.getFloat();
                     this.offset = offsetEnd;
                     break;
+                case TokenID.StartPosition:
+                    this.getString();
+                    if (currentObject) {
+                        (currentObject as any).startPosition = {
+                            x: this.getFloat(),
+                            y: this.getFloat(),
+                            z: this.getFloat()
+                        };
+                    }
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.EndPosition:
+                    this.getString();
+                    if (currentObject) {
+                        (currentObject as any).endPosition = {
+                            x: this.getFloat(),
+                            y: this.getFloat(),
+                            z: this.getFloat()
+                        };
+                    }
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.StartType:
+                    this.getString();
+                    if (currentObject) (currentObject as any).startType = this.getInt();
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.EndType:
+                    this.getString();
+                    if (currentObject) (currentObject as any).endType = this.getInt();
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.StartDirection:
+                    this.getString();
+                    if (currentObject) (currentObject as any).startDirection = this.getInt();
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.EndDirection:
+                    this.getString();
+                    if (currentObject) (currentObject as any).endDirection = this.getInt();
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.Config:
+                    this.getString();
+                    if (currentObject) (currentObject as any).config = this.getInt();
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.Quality:
+                    this.getString();
+                    if (currentObject) (currentObject as any).quality = this.getInt();
+                    this.offset = offsetEnd;
+                    break;
                 case TokenID.comment:
                     this.offset = offsetEnd;
                     break;
