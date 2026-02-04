@@ -30,10 +30,10 @@ export class UnicodeWorldParser extends UnicodeParser implements IMstsParser<Mst
             });
             this.forEach(data, "qdirection", (a: any) => {
                 obj.qDirection = {
-                    w: parseFloat(a[0]),
-                    x: parseFloat(a[1]),
-                    y: parseFloat(a[2]),
-                    z: parseFloat(a[3])
+                    x: parseFloat(a[0]),
+                    y: parseFloat(a[1]),
+                    z: parseFloat(a[2]),
+                    w: parseFloat(a[3])
                 };
             });
             this.forEach(data, "matrix3x3", (a: any) => {
@@ -213,16 +213,27 @@ export class UnicodeWorldParser extends UnicodeParser implements IMstsParser<Mst
                 case "platform": {
                     const obj: Platform = { type: 'Platform' } as any;
                     parseCommonFields(obj, data);
-                    parseTrItemIds(obj, data);
+                    this.forEach(data, "platformname", (a: any) => {
+                        obj.platformName = {
+                            station: a[0],
+                            number: a[1]
+                        };
+                    });
                     this.forEach(data, "platformdata", (a: any) => obj.platformData = parseInt(a[0], 16));
+                    parseTrItemIds(obj, data);
                     result.objects.push(obj);
                     break;
                 }
                 case "siding": {
                     const obj: Siding = { type: 'Siding' } as any;
                     parseCommonFields(obj, data);
-                    parseTrItemIds(obj, data);
+                    this.forEach(data, "speedrange", (a: any) => {
+                        obj.speedRange = { min: parseInt(a[0]), max: parseInt(a[1]) };
+                    });
+                    this.forEach(data, "sidingname", (a: any) => obj.sidingName = a[0]);
                     this.forEach(data, "sidingdata", (a: any) => obj.sidingData = parseInt(a[0], 16));
+                    parseTrItemIds(obj, data);
+                    this.forEach(data, "collideflags", (a: any) => obj.collideFlags = parseInt(a[0], 16));
                     result.objects.push(obj);
                     break;
                 }
@@ -295,15 +306,15 @@ export class UnicodeWorldParser extends UnicodeParser implements IMstsParser<Mst
                     });
                     this.forEach(data, "starttype", (a: any) => obj.startType = parseInt(a[0]));
                     this.forEach(data, "endtype", (a: any) => obj.endType = parseInt(a[0]));
-                    this.forEach(data, "startdirection", (a: any) => obj.startDirection = parseInt(a[0]));
-                    this.forEach(data, "enddirection", (a: any) => obj.endDirection = parseInt(a[0]));
+                    this.forEach(data, "startdirection", (a: any) => obj.startDirection = parseFloat(a[0]));
+                    this.forEach(data, "enddirection", (a: any) => obj.endDirection = parseFloat(a[0]));
                     this.forEach(data, "config", (a: any) => obj.config = parseInt(a[0]));
                     this.forEach(data, "quality", (a: any) => obj.quality = parseInt(a[0]));
                     this.forEach(data, "direction", (a: any) => {
                         obj.direction = {
-                            angle: parseFloat(a[0]),
-                            param1: parseInt(a[1]),
-                            param2: parseInt(a[2])
+                            x: parseFloat(a[0]),
+                            y: parseFloat(a[1]),
+                            z: parseFloat(a[2])
                         };
                     });
                     result.objects.push(obj);

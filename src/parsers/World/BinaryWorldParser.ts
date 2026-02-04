@@ -165,10 +165,10 @@ export class BinaryWorldParser extends BinaryParser implements IMstsParser<MstsW
                     this.getString();
                     if (currentObject) {
                         (currentObject as any).qDirection = {
-                            w: this.getFloat(),
                             x: this.getFloat(),
                             y: this.getFloat(),
-                            z: this.getFloat()
+                            z: this.getFloat(),
+                            w: this.getFloat()
                         };
                     }
                     this.offset = offsetEnd;
@@ -250,6 +250,17 @@ export class BinaryWorldParser extends BinaryParser implements IMstsParser<MstsW
                         (currentObject as any).jNodePosn = {
                             tileX: this.getInt(),
                             tileZ: this.getInt(),
+                            x: this.getFloat(),
+                            y: this.getFloat(),
+                            z: this.getFloat()
+                        };
+                    }
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.Direction:
+                    this.getString();
+                    if (currentObject) {
+                        (currentObject as any).direction = {
                             x: this.getFloat(),
                             y: this.getFloat(),
                             z: this.getFloat()
@@ -438,12 +449,12 @@ export class BinaryWorldParser extends BinaryParser implements IMstsParser<MstsW
                     break;
                 case TokenID.StartDirection:
                     this.getString();
-                    if (currentObject) (currentObject as any).startDirection = this.getInt();
+                    if (currentObject) (currentObject as any).startDirection = this.getFloat();
                     this.offset = offsetEnd;
                     break;
                 case TokenID.EndDirection:
                     this.getString();
-                    if (currentObject) (currentObject as any).endDirection = this.getInt();
+                    if (currentObject) (currentObject as any).endDirection = this.getFloat();
                     this.offset = offsetEnd;
                     break;
                 case TokenID.Config:
@@ -457,6 +468,21 @@ export class BinaryWorldParser extends BinaryParser implements IMstsParser<MstsW
                     this.offset = offsetEnd;
                     break;
                 case TokenID.comment:
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.PlatformName:
+                    this.getString();
+                    if (currentObject) {
+                        (currentObject as any).platformName = {
+                            station: this.getStringU(this.getShort()),
+                            number: this.getStringU(this.getShort())
+                        };
+                    }
+                    this.offset = offsetEnd;
+                    break;
+                case TokenID.SidingName:
+                    this.getString();
+                    if (currentObject) (currentObject as any).sidingName = this.getStringU(this.getShort());
                     this.offset = offsetEnd;
                     break;
                 default:

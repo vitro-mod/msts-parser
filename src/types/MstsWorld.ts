@@ -8,12 +8,15 @@ export type Position = {
     y: number;
     z: number;
 };
-
+export type PlatformName = {
+    station: string;
+    number: string;
+};
 export type QDirection = {
-    w: number;
     x: number;
     y: number;
     z: number;
+    w: number;
 };
 
 export type Matrix3x3 = [
@@ -112,9 +115,9 @@ export type SpeedTextSize = {
 };
 
 export type Direction = {
-    angle: number;
-    param1: number;
-    param2: number;
+    x: number;
+    y: number;
+    z: number;
 };
 
 /**
@@ -241,23 +244,32 @@ export type Pickup = {
 export type Platform = {
     type: 'Platform';
     uiD: number;
+    platformName?: PlatformName;
     platformData: number;
     trItemIds: TrItemId[];
     staticFlags: number;
     position: Position;
     qDirection: QDirection;
+    maxVisDistance?: number;
     vDbId: number;
+    staticDetailLevel?: number;
 };
 
 export type Siding = {
     type: 'Siding';
     uiD: number;
+    speedRange?: SpeedRange;
+    sidingName?: string;
     sidingData: number;
     trItemIds: TrItemId[];
+    collideFlags?: number;
     staticFlags: number;
+    fileName?: string;
     position: Position;
     qDirection: QDirection;
+    maxVisDistance?: number;
     vDbId: number;
+    staticDetailLevel?: number;
 };
 
 export type Signal = {
@@ -323,7 +335,6 @@ export type Telepole = {
     quality?: number;
     position: Position;
     direction?: Direction;
-    qDirection?: QDirection;
     maxVisDistance?: number;
     vDbId: number;
 };
