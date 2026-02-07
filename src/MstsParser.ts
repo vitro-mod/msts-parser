@@ -7,6 +7,7 @@ import { MstsRawParser } from "./parsers/MstsRawParser";
 import { RouteParser } from "./parsers/Route/RouteParser";
 import { ShapeParser } from "./parsers/Shape/ShapeParser";
 import { TextureParser } from "./parsers/Texture/TextureParser";
+import { TelepoleParser } from "./parsers/Telepole/TelepoleParser";
 import { TileParser } from "./parsers/TIle/TileParser";
 import { WorldParser } from "./parsers/World/WorldParser";
 import { IMstsReader } from "./readers/IMstsReader";
@@ -43,6 +44,10 @@ export class MstsParser {
     }
 
     private createParser(mstsData: MstsData, url: string): IMstsParser<MstsObject> {
+
+        if (Array.isArray(mstsData) && typeof mstsData[0] === "string" && mstsData[0].toLowerCase() === "tpoleconfigdata") {
+            return new TelepoleParser(mstsData);
+        }
 
         switch (url.split('.').at(-1)?.toLowerCase()) {
             case 'ace':

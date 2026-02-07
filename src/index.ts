@@ -6,6 +6,12 @@ export { MstsHazard } from './types/MstsHazard';
 export { MstsObject } from './types/MstsObject';
 export { MstsRaw } from './types/MstsRaw';
 export { MstsRoute } from './types/MstsRoute';
+export {
+    MstsTelepoleConfigData,
+    type TelepoleWirePoint as TelepoleWire,
+    type TelepoleConfig,
+    type TelepoleConfigData
+} from './types/MstsTelepole';
 export { MstsTexture } from './types/MstsTexture';
 export { 
     MstsTile,
